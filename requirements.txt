@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+twilio
+google-genai
+pydantic
+python-dotenv
+python-multipart
+aiosqlite
+httpx
+PyPDF2
+rich

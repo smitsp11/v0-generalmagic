@@ -1,0 +1,61 @@
+# --- Python / FastAPI --------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+.eggs/
+
+# Tests / coverage / tooling caches
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Logs
+*.log
+
+# --- Local config / secrets --------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- Local runtime data ------------------------------------------------------
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# --- OS junk ----------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# --- Editor / IDE ------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- Node / Next.js (harmless if unused) ------------------------------------
+node_modules/
+.next/
+out/
+.turbo/
+.eslintcache

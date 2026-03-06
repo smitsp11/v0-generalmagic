@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Chase Autopilot — Simulator</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --user-bubble: #1d4ed8;
+      --agent-bubble: #334155;
+      --green: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 { font-size: 18px; font-weight: 600; }
+    header .badge {
+      background: var(--green);
+      color: #000;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .config-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .config-bar label { font-size: 12px; color: var(--muted); }
+    .config-bar input, .config-bar select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .config-bar button {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .config-bar button:hover { opacity: 0.85; }
+
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .msg {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      line-height: 1.45;
+      font-size: 14px;
+      word-wrap: break-word;
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: var(--user-bubble);
+      border-bottom-right-radius: 4px;
+    }
+    .msg.agent {
+      align-self: flex-start;
+      background: var(--agent-bubble);
+      border-bottom-left-radius: 4px;
+    }
+    .msg .ts {
+      display: block;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .msg.system {
+      align-self: center;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      max-width: 90%;
+    }
+
+    .input-bar {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      gap: 10px;
+    }
+    .input-bar input[type="text"] {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+    .input-bar input[type="text"]:focus { border-color: var(--accent); }
+    .input-bar button {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .input-bar button:hover { opacity: 0.85; }
+
+    .file-upload {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .file-upload label {
+      cursor: pointer;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .file-upload label:hover { border-color: var(--accent); color: var(--accent); }
+    .file-upload input[type="file"] { display: none; }
+    .file-upload .file-name { font-size: 12px; color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Document Chase Autopilot</h1>
+  <span class="badge">SIMULATOR</span>
+</header>
+
+<div class="config-bar">
+  <label>Phone:
+    <input type="text" id="phone" value="+15550001234" />
+  </label>
+  <label>Quote&nbsp;ID:
+    <input type="text" id="quoteId" value="Q-12345" />
+  </label>
+  <label>Document:
+    <select id="docType">
+      <option value="declarations_page">Declarations Page</option>
+      <option value="driver_abstract">Driver Abstract</option>
+      <option value="proof_of_address">Proof of Address</option>
+    </select>
+  </label>
+  <button id="btnCreate">Create Workflow</button>
+</div>
+
+<div class="chat-area" id="chat"></div>
+
+<div class="input-bar">
+  <input type="text" id="msgInput" placeholder="Type a message…" />
+  <div class="file-upload">
+    <label for="fileInput">Attach</label>
+    <input type="file" id="fileInput" accept=".pdf,image/jpeg,image/png" />
+    <span class="file-name" id="fileName"></span>
+  </div>
+  <button id="btnSend">Send</button>
+</div>
+
+<script>
+const chat = document.getElementById('chat');
+const msgInput = document.getElementById('msgInput');
+const fileInput = document.getElementById('fileInput');
+const fileName = document.getElementById('fileName');
+const phoneInput = document.getElementById('phone');
+
+fileInput.addEventListener('change', () => {
+  fileName.textContent = fileInput.files.length ? fileInput.files[0].name : '';
+});
+
+function addMsg(text, cls) {
+  const d = document.createElement('div');
+  d.className = `msg ${cls}`;
+  const ts = new Date().toLocaleTimeString();
+  d.innerHTML = `${text}<span class="ts">${ts}</span>`;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+document.getElementById('btnCreate').addEventListener('click', async () => {
+  const phone = phoneInput.value;
+  const quoteId = document.getElementById('quoteId').value;
+  const docType = document.getElementById('docType').value;
+
+  const res = await fetch('/workflows', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, quote_id: quoteId, document_type: docType }),
+  });
+  const data = await res.json();
+  addMsg(`Workflow created: ${data.workflow.id.slice(0, 8)}… (${data.workflow.status})`, 'system');
+  const firstEvent = data.audit_events[0];
+  if (firstEvent?.metadata?.sms_body) {
+    addMsg(firstEvent.metadata.sms_body, 'agent');
+  }
+});
+
+document.getElementById('btnSend').addEventListener('click', send);
+msgInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+
+async function send() {
+  const body = msgInput.value.trim();
+  const file = fileInput.files[0];
+  if (!body && !file) return;
+
+  const formData = new FormData();
+  formData.append('from_number', phoneInput.value);
+  formData.append('body', body);
+
+  if (file) {
+    formData.append('num_media', '1');
+    // For the simulator, we use a data URL as a stand-in for media_url
+    const dataUrl = await fileToDataUrl(file);
+    formData.append('media_url', dataUrl);
+    formData.append('media_content_type', file.type);
+    addMsg(`${body ? body + ' ' : ''}[Attached: ${file.name}]`, 'user');
+  } else {
+    formData.append('num_media', '0');
+    addMsg(body, 'user');
+  }
+
+  msgInput.value = '';
+  fileInput.value = '';
+  fileName.textContent = '';
+
+  const res = await fetch('/demo/send', { method: 'POST', body: formData });
+  const data = await res.json();
+  addMsg(data.reply, 'agent');
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+</body>
+</html>
