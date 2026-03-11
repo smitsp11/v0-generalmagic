@@ -60,36 +60,39 @@ async def classify(
     if not GEMINI_API_KEY:
         return _mock_classify(message_body)
 
-    client = _get_client()
-
-    user_context = (
-        f"Workflow status: {workflow_status}. "
-        f"Document needed: {document_type}. "
-        f"Customer message: {message_body}"
-    )
-
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=user_context,
-        config=genai.types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-        ),
-    )
-
-    raw = response.text.strip()
-    raw = re.sub(r"^```(?:json)?\s*", "", raw)
-    raw = re.sub(r"\s*```$", "", raw)
-
     try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        return IntentResult(intent="other", response="", doc_reminder=True)
+        client = _get_client()
 
-    return IntentResult(
-        intent=data.get("intent", "other"),
-        response=data.get("response", ""),
-        doc_reminder=data.get("doc_reminder", True),
-    )
+        user_context = (
+            f"Workflow status: {workflow_status}. "
+            f"Document needed: {document_type}. "
+            f"Customer message: {message_body}"
+        )
+
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=user_context,
+            config=genai.types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+            ),
+        )
+
+        raw = response.text.strip()
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            return IntentResult(intent="other", response="", doc_reminder=True)
+
+        return IntentResult(
+            intent=data.get("intent", "other"),
+            response=data.get("response", ""),
+            doc_reminder=data.get("doc_reminder", True),
+        )
+    except Exception:
+        return _mock_classify(message_body)
 
 
 _QUESTION_KEYWORDS = {"?", "does", "can", "will", "how", "what", "when", "is", "do", "why", "which"}

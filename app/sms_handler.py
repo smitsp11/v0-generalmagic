@@ -13,7 +13,12 @@ from rich.console import Console
 from app import database as db
 from app import document_validator, intent_classifier, state_machine
 from app.carrier_api import push_to_carrier
-from app.config import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
+from app.config import (
+    DEMO_MODE,
+    TWILIO_ACCOUNT_SID,
+    TWILIO_AUTH_TOKEN,
+    TWILIO_PHONE_NUMBER,
+)
 from app.models import InboundMessage, WorkflowStatus
 
 console = Console()
@@ -111,7 +116,7 @@ async def handle_inbound(msg: InboundMessage) -> str:
 
 def send_sms(to: str, body: str) -> str | None:
     """Send an outbound SMS via Twilio. Returns the message SID or None in demo mode."""
-    if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN:
+    if DEMO_MODE or not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN:
         console.log(f"[dim]SMS (demo mode) → {to}:[/] {body}")
         return None
 
